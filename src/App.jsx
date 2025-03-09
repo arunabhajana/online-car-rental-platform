@@ -1,8 +1,10 @@
 import './App.css'
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 const App = () => {
   return (
     <div>
-      <h1>Online Car Rental Platform</h1>
+      <HomePage />
     </div>
   )
 }

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import Header from "../components/Header";
 
-const LoginPage = () => {
+const RegistrationPage = () => {
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
+    phone: "",
   });
 
   const handleChange = (e) => {
@@ -13,17 +14,27 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Login Attempt", formData);
+    console.log("Form Submitted", formData);
   };
 
   return (
-    <>
-    <Header />
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="card bg-base-100 w-96 shadow-sm p-6 rounded-2xl">
         <div className="card-body">
-          <h2 className="card-title text-2xl font-bold text-center text-gray-700">Login</h2>
+          <h2 className="card-title text-2xl font-bold text-center text-gray-700">Register</h2>
           <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
+            <div>
+              <label className="label">Name</label>
+              <input 
+                type="text" 
+                name="name" 
+                placeholder="Enter your name" 
+                value={formData.name} 
+                onChange={handleChange} 
+                className="input input-bordered w-full" 
+                required 
+              />
+            </div>
             <div>
               <label className="label">Email</label>
               <input 
@@ -48,15 +59,26 @@ const LoginPage = () => {
                 required 
               />
             </div>
+            <div>
+              <label className="label">Phone Number</label>
+              <input 
+                type="tel" 
+                name="phone" 
+                placeholder="Enter your phone number" 
+                value={formData.phone} 
+                onChange={handleChange} 
+                className="input input-bordered w-full" 
+                required 
+              />
+            </div>
             <div className="card-actions justify-end">
-              <button type="submit" className="btn btn-primary w-full">Login</button>
+              <button type="submit" className="btn btn-primary w-full">Register</button>
             </div>
           </form>
         </div>
       </div>
     </div>
-    </>
   );
 };
 
-export default LoginPage;
+export default RegistrationPage;
