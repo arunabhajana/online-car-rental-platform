@@ -1,6 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="navbar bg-base-100 shadow-sm">
             <div className="navbar-start">
@@ -25,14 +28,16 @@ const Header = () => {
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow"
                     >
-                        <li><a>Home</a></li>
-                        <li><a>Suppliers</a></li>
-                        <li><a>Listings</a></li>
+                        <li><a onClick={() => navigate("/")}>Home</a></li>
+                        <li><a onClick={() => navigate("/suppliers")}>Suppliers</a></li>
+                        <li><a onClick={() => navigate("/listings")}>Listings</a></li>
                     </ul>
                 </div>
             </div>
             <div className="navbar-center">
-                <a className="btn btn-ghost text-xl">BookCars</a>
+                <a onClick={() => navigate("/")} className="btn btn-ghost text-xl cursor-pointer">
+                    BookCars
+                </a>
             </div>
             <div className="navbar-end flex gap-4">
                 <input
@@ -40,7 +45,10 @@ const Header = () => {
                     placeholder="Search"
                     className="input input-bordered w-24 md:w-auto"
                 />
-                <button className="btn btn-soft btn-primary">New Listing</button>
+                {/* 🚀 New Listing Button with Route */}
+                <button className="btn btn-soft btn-primary" onClick={() => navigate("/new-listing")}>
+                    New Listing
+                </button>
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                         <div className="w-10 rounded-full">
@@ -54,14 +62,9 @@ const Header = () => {
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow"
                     >
-                        <li>
-                            <a className="justify-between">
-                                Profile
-                                <span className="badge">New</span>
-                            </a>
-                        </li>
-                        <li><a>Settings</a></li>
-                        <li><a>Logout</a></li>
+                        <li><a onClick={() => navigate("/profile")}>Profile</a></li>
+                        <li><a onClick={() => navigate("/settings")}>Settings</a></li>
+                        <li><a onClick={() => navigate("/login")}>Logout</a></li>
                     </ul>
                 </div>
             </div>
