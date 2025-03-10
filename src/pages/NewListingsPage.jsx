@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { db, auth, storage } from "../firebaseConfig"; 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, auth } from "../firebaseConfig";
+import { collection, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import Header from "../components/Header";
 
 const NewListingsPage = () => {
@@ -10,12 +9,16 @@ const NewListingsPage = () => {
     brand: "",
     model: "",
     year: "",
+    carAge: "",
+    pricePerHour: "",
     fuelType: "Petrol",
     capacity: "",
     transmission: "Automatic",
     location: "",
+    availableFrom: "",
+    availableTill: "",
   });
-  const [image, setImage] = useState(null);
+
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -23,13 +26,6 @@ const NewListingsPage = () => {
   // Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Handle image selection
-  const handleImageChange = (e) => {
-    if (e.target.files[0]) {
-      setImage(e.target.files[0]);
-    }
   };
 
   // Handle form submission
@@ -41,34 +37,27 @@ const NewListingsPage = () => {
     try {
       if (!auth.currentUser) throw new Error("User not authenticated!");
 
-      let imageUrl = "";
-
-      if (image) {
-        // Upload image to Firebase Storage
-        const storageRef = ref(storage, `car-images/${Date.now()}-${image.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, image);
-
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            null,
-            (error) => reject(error),
-            async () => {
-              imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve();
-            }
-          );
-        });
-      }
+      // Convert date-time fields to Firestore Timestamp
+      const availableFromTimestamp = Timestamp.fromDate(new Date(formData.availableFrom));
+      const availableTillTimestamp = Timestamp.fromDate(new Date(formData.availableTill));
 
       // Save car listing in Firestore
-      await addDoc(collection(db, "cars"), {
-        ...formData,
+      await addDoc(collection(db, "car"), {
+        brand: formData.brand,
+        model: formData.model,
         year: Number(formData.year),
+        carAge: Number(formData.carAge),
+        pricePerHour: Number(formData.pricePerHour),
+        fuelType: formData.fuelType,
         capacity: Number(formData.capacity),
-        imageUrl,
-        userId: auth.currentUser.uid,
-        timestamp: serverTimestamp(),
+        transmission: formData.transmission,
+        location: formData.location,
+        imageUrl: "noimage",
+        ownerId: auth.currentUser.uid,
+        availableFrom: availableFromTimestamp,
+        availableTill: availableTillTimestamp,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
       alert("Car listed successfully!");
@@ -112,6 +101,18 @@ const NewListingsPage = () => {
               <input type="number" name="year" placeholder="Enter car year" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
+            {/* Car Age */}
+            <div>
+              <label className="label"><span className="label-text">Car Age (years)</span></label>
+              <input type="number" name="carAge" placeholder="Enter car age" className="input input-bordered w-full" onChange={handleChange} required />
+            </div>
+
+            {/* Price Per Hour */}
+            <div>
+              <label className="label"><span className="label-text">Price Per Hour (₹)</span></label>
+              <input type="number" name="pricePerHour" placeholder="Enter price per hour" className="input input-bordered w-full" onChange={handleChange} required />
+            </div>
+
             {/* Fuel Type */}
             <div>
               <label className="label"><span className="label-text">Fuel Type</span></label>
@@ -125,8 +126,8 @@ const NewListingsPage = () => {
 
             {/* Capacity */}
             <div>
-              <label className="label"><span className="label-text">Capacity</span></label>
-              <input type="number" name="capacity" placeholder="Enter capacity (seats)" className="input input-bordered w-full" onChange={handleChange} required />
+              <label className="label"><span className="label-text">Capacity (Seats)</span></label>
+              <input type="number" name="capacity" placeholder="Enter seating capacity" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Transmission */}
@@ -144,10 +145,16 @@ const NewListingsPage = () => {
               <input type="text" name="location" placeholder="Enter location" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
-            {/* Image Upload */}
+            {/* Available From */}
             <div>
-              <label className="label"><span className="label-text">Upload Car Image</span></label>
-              <input type="file" accept="image/*" className="file-input file-input-bordered w-full" onChange={handleImageChange} required />
+              <label className="label"><span className="label-text">Available From</span></label>
+              <input type="datetime-local" name="availableFrom" className="input input-bordered w-full" onChange={handleChange} required />
+            </div>
+
+            {/* Available Till */}
+            <div>
+              <label className="label"><span className="label-text">Available Till</span></label>
+              <input type="datetime-local" name="availableTill" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Submit Button */}
