@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebaseConfig";
 import Header from "../components/Header";
 
-// Function to format date-time
 const formatDate = (timestamp) => {
   if (!timestamp || !timestamp.toDate) return "N/A";
-  return timestamp.toDate().toLocaleString(); // Convert Firestore timestamp to readable format
+  return timestamp.toDate().toLocaleString();
 };
 
 const ListingsPage = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // ✅ Initialize navigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!auth.currentUser) {
@@ -63,29 +62,19 @@ const ListingsPage = () => {
             <table className="table">
               <thead>
                 <tr>
-                  <th>
-                    <label>
-                      <input type="checkbox" className="checkbox" />
-                    </label>
-                  </th>
                   <th>Serial No</th>
                   <th>Car</th>
                   <th>Fuel Type</th>
                   <th>Transmission</th>
                   <th>Location</th>
                   <th className="text-center">Availability</th>
-                  <th>Price Per Hour (₹)</th> {/* ✅ New column for price per hour */}
+                  <th>Price Per Hour (₹)</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {listings.map((listing, index) => (
                   <tr key={listing.id}>
-                    <th>
-                      <label>
-                        <input type="checkbox" className="checkbox" />
-                      </label>
-                    </th>
                     <td>{index + 1}</td>
                     <td>
                       <div>
@@ -101,18 +90,18 @@ const ListingsPage = () => {
                     <td className="text-center">
                       {formatDate(listing.availableFrom)} → {formatDate(listing.availableTill)}
                     </td>
-                    <td className="text-center font-semibold">₹{listing.pricePerHour || "N/A"}</td> {/* ✅ Display price per hour */}
+                    <td className="text-center font-semibold">₹{listing.pricePerHour || "N/A"}</td>
                     <td>
                       <div className="flex space-x-2">
                         <button
                           className="btn btn-soft btn-info"
-                          onClick={() => navigate(`/edit/${listing.id}`)} // ✅ Navigate to edit page
+                          onClick={() => navigate(`/edit/${listing.id}`)}
                         >
                           Edit
                         </button>
-                        <button 
-                          className="btn btn-soft btn-primary" 
-                          onClick={() => alert("View Listing clicked!")} // Placeholder action
+                        <button
+                          className="btn btn-soft btn-primary"
+                          onClick={() => navigate(`/listing/${listing.id}`)} // ✅ Corrected navigation
                         >
                           View
                         </button>

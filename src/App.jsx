@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import EditListingPage from "./pages/EditListingsPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
+import ListingDetailsPage from "./pages/ListingDetailsPage";
 
 function App() {
   return (
@@ -25,7 +26,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegistrationPage />} />
         <Route path="/edit/:id" element={<EditListingPage />} />
-        <Route path="/search-results" element={<SearchResultsPage />} />  {/* ✅ New Route for search */}
+        <Route path="/search-results" element={<SearchResultsPage />} />
+        <Route path="/listing/:id" element={<ListingDetailsPage />} />
       </Routes>
     </Router>
   );
