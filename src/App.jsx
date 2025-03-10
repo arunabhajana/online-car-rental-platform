@@ -8,8 +8,7 @@ import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import EditListingPage from "./pages/EditListingsPage";
-import SearchResultsPage from "./pages/SearchResultsPage"; // ✅ Import SearchResultsPage
-import SearchSection from "./components/SearchSection"; // ✅ Import SearchSection
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
       <Routes>
         <Route path="/" element={<>
           <HomePage />
-          <SearchSection />  {/* ✅ Added SearchSection to HomePage */}
         </>} />
         <Route path="/suppliers" element={<SuppliersPage />} />
         <Route path="/listings" element={<ListingsPage />} />
