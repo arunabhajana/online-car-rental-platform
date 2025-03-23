@@ -8,12 +8,13 @@ BookCars is a modern car rental platform that allows users to list, browse, and 
 
 ## 📌 Features
 
-- ✅ User Authentication – Sign up, log in, and manage accounts.
+- ✅ Role Based User Authentication – Sign up, log in, and manage accounts.
 - ✅ List Cars – Owners can create listings for their cars with details like price, fuel type, and availability.
 - ✅ Booking System – Users can book cars based on flexible pricing (hourly, daily, weekly, monthly).
 - ✅ Real-time Search – Find cars with a smart search bar (Cmd + K / Ctrl + K).
 - ✅ Responsive UI – Optimized for mobile and desktop.
 - ✅ Secure Payments – Integration with a payment gateway (future feature).
+- ✅ Admin Dashboard - Monitor the users , listings & bookings.
 
 
 ## 🛠️ Tech Stack

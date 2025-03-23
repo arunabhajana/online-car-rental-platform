@@ -1,42 +1,62 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import Header from "../components/Header";
-import { loginWithEmail, loginWithGoogle } from "../firebaseConfig";
+import { loginWithEmail, loginWithGoogle, db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle email & password login
+  const handleLogin = async (user) => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      let userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        const newUser = {
+          uid: user.uid,
+          email: user.email,
+          username: user.displayName || "Anonymous",
+          role: "user", 
+          createdDate: serverTimestamp(), 
+        };
+        await setDoc(userRef, newUser);
+        userDoc = await getDoc(userRef); 
+      }
+
+      const role = userDoc.data().role;
+      console.log("User role:", role);
+      navigate(role === "admin" ? "/admin-dashboard" : "/home");
+    } catch (err) {
+      console.error("Error fetching user role:", err);
+      setError("Failed to log in. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      await loginWithEmail(formData.email, formData.password);
-      console.log("Login successful!");
-      navigate("/"); // Redirect to Homepage
+      const userCredential = await loginWithEmail(formData.email, formData.password);
+      await handleLogin(userCredential.user);
     } catch (error) {
       setError(error.message);
       console.error("Login error:", error.message);
     }
   };
 
-  // Handle Google Login
   const handleGoogleLogin = async () => {
     setError("");
     try {
-      await loginWithGoogle();
-      console.log("Google login successful!");
-      navigate("/"); // Redirect to Homepage
+      const userCredential = await loginWithGoogle();
+      await handleLogin(userCredential.user);
     } catch (error) {
       setError(error.message);
       console.error("Google login error:", error.message);
