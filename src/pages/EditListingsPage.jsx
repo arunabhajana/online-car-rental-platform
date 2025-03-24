@@ -3,11 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebaseConfig";
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "../components/Header";
+import { ProgressSpinner } from "primereact/progressspinner";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 
 const EditListingPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     brand: "",
     model: "",
@@ -22,10 +28,14 @@ const EditListingPage = () => {
     availableTill: "",
     imageUrl: "",
   });
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  // ✅ Success & Error Message States
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   // Fetch listing data
   useEffect(() => {
@@ -43,11 +53,11 @@ const EditListingPage = () => {
             availableTill: data.availableTill?.toDate().toISOString().slice(0, 16),
           });
         } else {
-          setError("Listing not found.");
+          setErrorMessage("Listing not found.");
         }
       } catch (err) {
         console.error("Error fetching listing:", err);
-        setError(err.message);
+        setErrorMessage(err.message);
       } finally {
         setLoading(false);
       }
@@ -98,10 +108,12 @@ const EditListingPage = () => {
   };
 
   // Handle form submission (Update Listing)
+  // Handle form submission (Update Listing)
   const handleUpdate = async (e) => {
     e.preventDefault();
     setUploading(true);
-    setError(null);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
       let uploadedImageUrl = formData.imageUrl;
@@ -122,17 +134,24 @@ const EditListingPage = () => {
         updatedAt: serverTimestamp(),
       });
 
-      alert("Listing updated successfully!");
-      navigate("/listings");
+      setSuccessMessage("Listing updated successfully! Redirecting...");
+
+
+      setTimeout(() => {
+        setSuccessMessage(null);
+        navigate("/listings");
+      }, 5000);
+
     } catch (err) {
-      setError("Failed to update listing.");
+      setErrorMessage("❌ Failed to update listing.");
       console.error("Update Error:", err);
+
+      setTimeout(() => setErrorMessage(null), 3000);
     } finally {
       setUploading(false);
     }
   };
 
-  // Handle remove listing
   const handleRemove = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this listing?");
     if (!confirmDelete) return;
@@ -142,14 +161,51 @@ const EditListingPage = () => {
       alert("Listing removed successfully!");
       navigate("/listings");
     } catch (err) {
-      setError("Failed to delete listing.");
+      setErrorMessage("❌ Failed to delete listing.");
       console.error("Delete Error:", err);
+
+      setTimeout(() => setErrorMessage(null), 3000);
     }
   };
 
   return (
     <>
       <Header />
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <AnimatePresence>
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.5 }}
+              className="alert alert-success shadow-lg"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{successMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.5 }}
+              className="alert alert-error shadow-lg"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{errorMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       <div className="container mx-auto py-10 px-5">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Edit Listing</h1>
@@ -157,9 +213,11 @@ const EditListingPage = () => {
         </div>
 
         {loading ? (
-          <p className="text-center text-lg">Loading...</p>
-        ) : error ? (
-          <p className="text-center text-red-500">{error}</p>
+          <div className="flex justify-center items-center h-40">
+            <ProgressSpinner />
+          </div>
+        ) : errorMessage ? (
+          <p className="text-center text-red-500">{errorMessage}</p>
         ) : (
           <div className="max-w-lg mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
             <form className="space-y-4" onSubmit={handleUpdate}>
@@ -188,6 +246,35 @@ const EditListingPage = () => {
                 <label className="label">Capacity</label>
                 <input type="number" name="capacity" className="input input-bordered w-full" value={formData.capacity} onChange={handleChange} required />
               </div>
+
+              {/* Transmission Type */}
+              <div>
+                <label className="label"><span className="label-text">Transmission Type</span></label>
+                <select
+                  name="transmission"
+                  className="select select-bordered w-full"
+                  onChange={handleChange}
+                  value={formData.transmission}
+                  required
+                >
+                  <option value="Automatic">Automatic</option>
+                  <option value="Manual">Manual</option>
+                </select>
+              </div>
+
+
+              <div>
+                <label className="label">Price Per Hour (₹)</label>
+                <input
+                  type="number"
+                  name="pricePerHour"
+                  className="input input-bordered w-full"
+                  value={formData.pricePerHour}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
 
               <div>
                 <label className="label">Location</label>

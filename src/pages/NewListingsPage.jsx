@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { db, auth, storage } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { motion, AnimatePresence } from "framer-motion"; // Import Framer Motion
 import Header from "../components/Header";
 
 const NewListingsPage = () => {
@@ -24,6 +25,7 @@ const NewListingsPage = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   // Handle input changes
@@ -65,21 +67,19 @@ const NewListingsPage = () => {
     e.preventDefault();
     setUploading(true);
     setError(null);
+    setSuccess(false);
 
     try {
       if (!auth.currentUser) throw new Error("User not authenticated!");
 
-      // Convert date-time fields to Firestore Timestamp
       const availableFromTimestamp = Timestamp.fromDate(new Date(formData.availableFrom));
       const availableTillTimestamp = Timestamp.fromDate(new Date(formData.availableTill));
 
-      // Upload image & get URL
       let uploadedImageUrl = "noimage";
       if (imageFile) {
         uploadedImageUrl = await uploadImage(imageFile);
       }
 
-      // Save car listing in Firestore
       await addDoc(collection(db, "car"), {
         brand: formData.brand,
         model: formData.model,
@@ -90,7 +90,7 @@ const NewListingsPage = () => {
         capacity: Number(formData.capacity),
         transmission: formData.transmission,
         location: formData.location,
-        imageUrl: uploadedImageUrl, 
+        imageUrl: uploadedImageUrl,
         ownerId: auth.currentUser.uid,
         availableFrom: availableFromTimestamp,
         availableTill: availableTillTimestamp,
@@ -98,8 +98,10 @@ const NewListingsPage = () => {
         updatedAt: serverTimestamp(),
       });
 
-      alert("Car listed successfully!");
-      navigate("/listings");
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/listings");
+      }, 5000);
     } catch (err) {
       setError(err.message);
       console.error("Error adding listing:", err);
@@ -114,11 +116,37 @@ const NewListingsPage = () => {
       <div className="container mx-auto py-10 px-5">
         <h1 className="text-3xl font-bold text-center mb-8">Create New Listing</h1>
         <div className="max-w-lg mx-auto bg-white p-6 shadow-md rounded-lg">
-          {error && (
-            <div role="alert" className="alert alert-error">
-              <span>{error}</span>
-            </div>
-          )}
+
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 50, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                role="alert"
+                className="alert alert-error fixed bottom-5 left-1/2 transform -translate-x-1/2 w-96"
+              >
+                <span>{error}</span>
+              </motion.div>
+            )}
+
+            {success && (
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 50, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                role="alert"
+                className="alert alert-success fixed bottom-5 left-1/2 transform -translate-x-1/2 w-96 flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Car listed successfully! Redirecting...</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Car Brand */}
@@ -162,7 +190,23 @@ const NewListingsPage = () => {
               </select>
             </div>
 
-            {/* Capacity (Added after Fuel Type) */}
+            {/* Transmission Type */}
+            <div>
+              <label className="label"><span className="label-text">Transmission Type</span></label>
+              <select
+                name="transmission"
+                className="select select-bordered w-full"
+                onChange={handleChange}
+                value={formData.transmission}
+                required
+              >
+                <option value="Automatic">Automatic</option>
+                <option value="Manual">Manual</option>
+              </select>
+            </div>
+
+
+            {/* Capacity */}
             <div>
               <label className="label"><span className="label-text">Seating Capacity</span></label>
               <input type="number" name="capacity" className="input input-bordered w-full" onChange={handleChange} required />
@@ -172,9 +216,7 @@ const NewListingsPage = () => {
             <div>
               <label className="label"><span className="label-text">Upload Car Image</span></label>
               <input type="file" className="file-input file-input-bordered w-full" onChange={handleImageChange} required />
-              {imageUrl && (
-                <img src={imageUrl} alt="Preview" className="mt-2 w-40 h-40 object-cover rounded-lg" />
-              )}
+              {imageUrl && <img src={imageUrl} alt="Preview" className="mt-2 w-40 h-40 object-cover rounded-lg" />}
             </div>
 
             {/* Location */}
@@ -183,16 +225,27 @@ const NewListingsPage = () => {
               <input type="text" name="location" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
-            {/* Available From */}
             <div>
               <label className="label"><span className="label-text">Available From</span></label>
-              <input type="datetime-local" name="availableFrom" className="input input-bordered w-full" onChange={handleChange} required />
+              <input
+                type="datetime-local"
+                name="availableFrom"
+                className="input input-bordered w-full"
+                onChange={handleChange}
+                required
+              />
             </div>
 
             {/* Available Till */}
             <div>
               <label className="label"><span className="label-text">Available Till</span></label>
-              <input type="datetime-local" name="availableTill" className="input input-bordered w-full" onChange={handleChange} required />
+              <input
+                type="datetime-local"
+                name="availableTill"
+                className="input input-bordered w-full"
+                onChange={handleChange}
+                required
+              />
             </div>
 
             {/* Submit Button */}
