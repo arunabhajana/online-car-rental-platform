@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebaseConfig";
 import Header from "../components/Header";
 
 const EditListingPage = () => {
-  const { id } = useParams(); // Get listing ID from URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     brand: "",
@@ -19,9 +20,12 @@ const EditListingPage = () => {
     location: "",
     availableFrom: "",
     availableTill: "",
+    imageUrl: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   // Fetch listing data
   useEffect(() => {
@@ -57,7 +61,6 @@ const EditListingPage = () => {
     const { name, value } = e.target;
     let updatedFormData = { ...formData, [name]: value };
 
-    // Automatically update car age when year changes
     if (name === "year") {
       updatedFormData.carAge = new Date().getFullYear() - Number(value);
     }
@@ -65,12 +68,47 @@ const EditListingPage = () => {
     setFormData(updatedFormData);
   };
 
+  // Handle image selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setFormData({ ...formData, imageUrl: URL.createObjectURL(file) });
+    }
+  };
+
+  // Upload image to Firebase Storage
+  const uploadImage = async (file) => {
+    if (!file) return formData.imageUrl;
+
+    const storageRef = ref(storage, `cars/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        null,
+        (error) => reject(error),
+        async () => {
+          const downloadURL = await getDownloadURL(storageRef);
+          resolve(downloadURL);
+        }
+      );
+    });
+  };
+
   // Handle form submission (Update Listing)
   const handleUpdate = async (e) => {
     e.preventDefault();
+    setUploading(true);
     setError(null);
 
     try {
+      let uploadedImageUrl = formData.imageUrl;
+      if (imageFile) {
+        uploadedImageUrl = await uploadImage(imageFile);
+      }
+
       const docRef = doc(db, "car", id);
       await updateDoc(docRef, {
         ...formData,
@@ -80,6 +118,7 @@ const EditListingPage = () => {
         carAge: Number(formData.carAge),
         availableFrom: new Date(formData.availableFrom),
         availableTill: new Date(formData.availableTill),
+        imageUrl: uploadedImageUrl,
         updatedAt: serverTimestamp(),
       });
 
@@ -88,6 +127,8 @@ const EditListingPage = () => {
     } catch (err) {
       setError("Failed to update listing.");
       console.error("Update Error:", err);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -122,83 +163,51 @@ const EditListingPage = () => {
         ) : (
           <div className="max-w-lg mx-auto bg-white p-6 shadow-md rounded-lg mt-6">
             <form className="space-y-4" onSubmit={handleUpdate}>
-              {/* Car Brand */}
               <div>
-                <label className="label"><span className="label-text">Car Brand</span></label>
+                <label className="label">Car Brand</label>
                 <input type="text" name="brand" className="input input-bordered w-full" value={formData.brand} onChange={handleChange} required />
               </div>
 
-              {/* Car Model */}
               <div>
-                <label className="label"><span className="label-text">Car Model</span></label>
+                <label className="label">Car Model</label>
                 <input type="text" name="model" className="input input-bordered w-full" value={formData.model} onChange={handleChange} required />
               </div>
 
-              {/* Car Year */}
               <div>
-                <label className="label"><span className="label-text">Car Year</span></label>
+                <label className="label">Car Year</label>
                 <input type="number" name="year" className="input input-bordered w-full" value={formData.year} onChange={handleChange} required />
               </div>
 
-              {/* Car Age (Read-only) */}
               <div>
-                <label className="label"><span className="label-text">Car Age</span></label>
-                <input type="number" name="carAge" className="input input-bordered w-full" value={formData.carAge} readOnly />
+                <label className="label">Car Image</label>
+                <input type="file" className="file-input file-input-bordered w-full" onChange={handleImageChange} />
+                {formData.imageUrl && <img src={formData.imageUrl} alt="Car Preview" className="mt-2 w-40 h-40 object-cover rounded-lg" />}
               </div>
 
-              {/* Price Per Hour */}
               <div>
-                <label className="label"><span className="label-text">Price Per Hour (₹)</span></label>
-                <input type="number" name="pricePerHour" className="input input-bordered w-full" value={formData.pricePerHour} onChange={handleChange} required />
-              </div>
-
-              {/* Fuel Type */}
-              <div>
-                <label className="label"><span className="label-text">Fuel Type</span></label>
-                <select name="fuelType" className="select select-bordered w-full" value={formData.fuelType} onChange={handleChange} required>
-                  <option>Petrol</option>
-                  <option>Diesel</option>
-                  <option>Electric</option>
-                  <option>Hybrid</option>
-                </select>
-              </div>
-
-              {/* Capacity */}
-              <div>
-                <label className="label"><span className="label-text">Capacity</span></label>
+                <label className="label">Capacity</label>
                 <input type="number" name="capacity" className="input input-bordered w-full" value={formData.capacity} onChange={handleChange} required />
               </div>
 
-              {/* Transmission */}
               <div>
-                <label className="label"><span className="label-text">Transmission</span></label>
-                <select name="transmission" className="select select-bordered w-full" value={formData.transmission} onChange={handleChange} required>
-                  <option>Automatic</option>
-                  <option>Manual</option>
-                </select>
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="label"><span className="label-text">Location</span></label>
+                <label className="label">Location</label>
                 <input type="text" name="location" className="input input-bordered w-full" value={formData.location} onChange={handleChange} required />
               </div>
 
-              {/* Available From */}
               <div>
-                <label className="label"><span className="label-text">Available From</span></label>
+                <label className="label">Available From</label>
                 <input type="datetime-local" name="availableFrom" className="input input-bordered w-full" value={formData.availableFrom} onChange={handleChange} required />
               </div>
 
-              {/* Available Till */}
               <div>
-                <label className="label"><span className="label-text">Available Till</span></label>
+                <label className="label">Available Till</label>
                 <input type="datetime-local" name="availableTill" className="input input-bordered w-full" value={formData.availableTill} onChange={handleChange} required />
               </div>
 
-              {/* Update Button */}
               <div className="text-center mt-4">
-                <button type="submit" className="btn btn-primary w-full">Update Listing</button>
+                <button type="submit" className="btn btn-primary w-full" disabled={uploading}>
+                  {uploading ? "Updating..." : "Update Listing"}
+                </button>
               </div>
             </form>
           </div>

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { db, auth } from "../firebaseConfig";
+import { db, auth, storage } from "../firebaseConfig";
 import { collection, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Header from "../components/Header";
 
 const NewListingsPage = () => {
@@ -19,6 +20,8 @@ const NewListingsPage = () => {
     availableTill: "",
   });
 
+  const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -26,6 +29,35 @@ const NewListingsPage = () => {
   // Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Handle image selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImageUrl(URL.createObjectURL(file)); // Show image preview
+    }
+  };
+
+  // Upload image & get URL
+  const uploadImage = async (file) => {
+    if (!file) return null;
+
+    const storageRef = ref(storage, `cars/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        null,
+        (error) => reject(error),
+        async () => {
+          const downloadURL = await getDownloadURL(storageRef);
+          resolve(downloadURL);
+        }
+      );
+    });
   };
 
   // Handle form submission
@@ -41,6 +73,12 @@ const NewListingsPage = () => {
       const availableFromTimestamp = Timestamp.fromDate(new Date(formData.availableFrom));
       const availableTillTimestamp = Timestamp.fromDate(new Date(formData.availableTill));
 
+      // Upload image & get URL
+      let uploadedImageUrl = "noimage";
+      if (imageFile) {
+        uploadedImageUrl = await uploadImage(imageFile);
+      }
+
       // Save car listing in Firestore
       await addDoc(collection(db, "car"), {
         brand: formData.brand,
@@ -52,7 +90,7 @@ const NewListingsPage = () => {
         capacity: Number(formData.capacity),
         transmission: formData.transmission,
         location: formData.location,
-        imageUrl: "noimage",
+        imageUrl: uploadedImageUrl, 
         ownerId: auth.currentUser.uid,
         availableFrom: availableFromTimestamp,
         availableTill: availableTillTimestamp,
@@ -86,31 +124,31 @@ const NewListingsPage = () => {
             {/* Car Brand */}
             <div>
               <label className="label"><span className="label-text">Car Brand</span></label>
-              <input type="text" name="brand" placeholder="Enter car brand" className="input input-bordered w-full" onChange={handleChange} required />
+              <input type="text" name="brand" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Car Model */}
             <div>
               <label className="label"><span className="label-text">Car Model</span></label>
-              <input type="text" name="model" placeholder="Enter car model" className="input input-bordered w-full" onChange={handleChange} required />
+              <input type="text" name="model" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
-            {/* Car Year */}
+            {/* Year */}
             <div>
               <label className="label"><span className="label-text">Car Year</span></label>
-              <input type="number" name="year" placeholder="Enter car year" className="input input-bordered w-full" onChange={handleChange} required />
+              <input type="number" name="year" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Car Age */}
             <div>
               <label className="label"><span className="label-text">Car Age (years)</span></label>
-              <input type="number" name="carAge" placeholder="Enter car age" className="input input-bordered w-full" onChange={handleChange} required />
+              <input type="number" name="carAge" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Price Per Hour */}
             <div>
               <label className="label"><span className="label-text">Price Per Hour (₹)</span></label>
-              <input type="number" name="pricePerHour" placeholder="Enter price per hour" className="input input-bordered w-full" onChange={handleChange} required />
+              <input type="number" name="pricePerHour" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Fuel Type */}
@@ -124,25 +162,25 @@ const NewListingsPage = () => {
               </select>
             </div>
 
-            {/* Capacity */}
+            {/* Capacity (Added after Fuel Type) */}
             <div>
-              <label className="label"><span className="label-text">Capacity (Seats)</span></label>
-              <input type="number" name="capacity" placeholder="Enter seating capacity" className="input input-bordered w-full" onChange={handleChange} required />
+              <label className="label"><span className="label-text">Seating Capacity</span></label>
+              <input type="number" name="capacity" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
-            {/* Transmission */}
+            {/* Image Upload */}
             <div>
-              <label className="label"><span className="label-text">Transmission</span></label>
-              <select name="transmission" className="select select-bordered w-full" onChange={handleChange} required>
-                <option>Automatic</option>
-                <option>Manual</option>
-              </select>
+              <label className="label"><span className="label-text">Upload Car Image</span></label>
+              <input type="file" className="file-input file-input-bordered w-full" onChange={handleImageChange} required />
+              {imageUrl && (
+                <img src={imageUrl} alt="Preview" className="mt-2 w-40 h-40 object-cover rounded-lg" />
+              )}
             </div>
 
             {/* Location */}
             <div>
               <label className="label"><span className="label-text">Location</span></label>
-              <input type="text" name="location" placeholder="Enter location" className="input input-bordered w-full" onChange={handleChange} required />
+              <input type="text" name="location" className="input input-bordered w-full" onChange={handleChange} required />
             </div>
 
             {/* Available From */}
