@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import Header from "../components/Header";
@@ -10,6 +10,7 @@ import { Tooltip } from "primereact/tooltip";
 import { ProgressSpinner } from "primereact/progressspinner";
 
 const priceOptions = {
+  "Per Hour": 1,
   "Per Day": 24,
   "Per Week": 24 * 7,
   "Per Month": 24 * 30,
@@ -17,6 +18,7 @@ const priceOptions = {
 
 const ListingDetailsPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedOption, setSelectedOption] = useState("Per Day");
@@ -58,7 +60,6 @@ const ListingDetailsPage = () => {
     }
   }, [selectedOption, listing]);
 
-  // **✅ Show Spinner Instead of "Loading..." Text**
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-transparent">
@@ -66,6 +67,10 @@ const ListingDetailsPage = () => {
       </div>
     );
   }
+
+  const handleBookNow = () => {
+    navigate(`/booking/${id}`);
+  };
 
   if (!listing) return <p className="text-center text-lg text-red-500">Listing not found.</p>;
 
@@ -121,7 +126,9 @@ const ListingDetailsPage = () => {
               Total Price: ₹{calculatedPrice}
             </p>
 
-            <button className="btn btn-primary w-full">Book Now</button>
+            <button className="btn btn-primary w-full" onClick={handleBookNow}>
+              Book Now
+            </button>
           </Card>
         </div>
 

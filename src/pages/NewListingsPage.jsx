@@ -21,6 +21,8 @@ const NewListingsPage = () => {
     availableTill: "",
   });
 
+  const cities = ["Hyderabad", "Chennai", "Bangalore", "Mumbai", "Delhi"];
+
   const [imageFile, setImageFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -219,10 +221,20 @@ const NewListingsPage = () => {
               {imageUrl && <img src={imageUrl} alt="Preview" className="mt-2 w-40 h-40 object-cover rounded-lg" />}
             </div>
 
-            {/* Location */}
+            {/* Location Dropdown */}
             <div>
               <label className="label"><span className="label-text">Location</span></label>
-              <input type="text" name="location" className="input input-bordered w-full" onChange={handleChange} required />
+              <select
+                name="location"
+                className="select select-bordered w-full"
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select a city</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
             </div>
 
             <div>

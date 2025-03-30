@@ -9,6 +9,8 @@ const formatDate = (timestamp) => {
   return timestamp.toDate().toLocaleString();
 };
 
+
+
 const ListingsPage = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);

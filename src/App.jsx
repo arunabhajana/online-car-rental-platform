@@ -16,6 +16,7 @@ import ListingDetailsPage from "./pages/ListingDetailsPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminListings from "./pages/AdminListings";
+import BookingPage from "./pages/BookingsPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -60,6 +61,7 @@ function App() {
         <Route path="/edit/:id" element={<PrivateRoute role={role}><EditListingPage /></PrivateRoute>} />
         <Route path="/search-results" element={<PrivateRoute role={role}><SearchResultsPage /></PrivateRoute>} />
         <Route path="/listing/:id" element={<PrivateRoute role={role}><ListingDetailsPage /></PrivateRoute>} />
+        <Route path="/booking/:id" element={<PrivateRoute role={role}><BookingPage /></PrivateRoute>} />
 
         {/* Admin Routes */}
         <Route path="/admin-dashboard" element={<AdminRoute role={role}><AdminDashboard /></AdminRoute>} />
