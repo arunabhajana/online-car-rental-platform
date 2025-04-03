@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Dropdown } from "primereact/dropdown";
 
-const PersonalDetails = ({ nextStep, prevStep }) => {
-    const [personalInfo, setPersonalInfo] = useState({
-        firstName: "",
-        middleName: "",
-        lastName: "",
-        dob: "",
-        mobileNumber: "",
-        email: "",
-        address1: "",
-        address2: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        proofOfAddress: "",
-        documentNumber: "",
-    });
+const PersonalDetails = ({ nextStep, prevStep, personalInfo, setPersonalInfo }) => {
+
 
     const [error, setError] = useState("");
     const [states, setStates] = useState([]);
@@ -24,23 +10,23 @@ const PersonalDetails = ({ nextStep, prevStep }) => {
 
     useEffect(() => {
         fetch("/data/states.json")
-        .then((res) => res.json())
-        .then((data) => {
-          const formattedStates = data.map((state) => ({
-            label: state.name, // Show name in dropdown
-            value: state.code, // Store state code
-          }));
-          setStates(formattedStates);
-        })
-        .catch((err) => console.error("Error fetching states:", err));
-  
-      // Fetch Cities
-      fetch("/data/cities.json")
-        .then((res) => res.json())
-        .then((data) => {
-          setCities(data);
-        })
-        .catch((err) => console.error("Error fetching cities:", err));
+            .then((res) => res.json())
+            .then((data) => {
+                const formattedStates = data.map((state) => ({
+                    label: state.name, // Show name in dropdown
+                    value: state.code, // Store state code
+                }));
+                setStates(formattedStates);
+            })
+            .catch((err) => console.error("Error fetching states:", err));
+
+        // Fetch Cities
+        fetch("/data/cities.json")
+            .then((res) => res.json())
+            .then((data) => {
+                setCities(data);
+            })
+            .catch((err) => console.error("Error fetching cities:", err));
     }, []);
 
     const handleStateChange = (e) => {
@@ -49,8 +35,12 @@ const PersonalDetails = ({ nextStep, prevStep }) => {
     };
 
     const handleChange = (e, field) => {
-        setPersonalInfo({ ...personalInfo, [field]: e.target.value });
+        setPersonalInfo({
+            ...personalInfo,
+            [field]: e.target.value,
+        });
     };
+
 
     const proofOptions = [
         { label: "Passport", value: "Passport" },
@@ -177,25 +167,27 @@ const PersonalDetails = ({ nextStep, prevStep }) => {
                         value={personalInfo.state}
                         options={states}
                         optionLabel="label"
-                        onChange={(e) => handleChange(e, "state")}
+                        onChange={handleStateChange} // Use correct handler
                         placeholder="Select State*"
                     />
+
                     <Dropdown
                         className="input input-accent w-full"
                         value={personalInfo.city}
                         options={
-                            personalInfo.state && cities[personalInfo.state]
+                            Array.isArray(cities[personalInfo.state])
                                 ? cities[personalInfo.state].map((city) => ({
-                                    label: city, 
-                                    value: city, 
+                                    label: city,
+                                    value: city,
                                 }))
                                 : []
                         }
                         onChange={(e) => handleChange(e, "city")}
-                        optionLabel="label"  
+                        optionLabel="label"
                         placeholder="Select City*"
                         disabled={!personalInfo.state}
                     />
+
 
                     <input
                         type="text"
@@ -217,10 +209,12 @@ const PersonalDetails = ({ nextStep, prevStep }) => {
                         className="input input-accent w-full"
                         value={personalInfo.proofOfAddress}
                         options={proofOptions}
+                        optionLabel="label" // ✅ Fix: Show readable labels
                         onChange={(e) => handleChange(e, "proofOfAddress")}
                         placeholder="Select Proof of Address"
                         required
                     />
+
 
                     {personalInfo.proofOfAddress && (
                         <input

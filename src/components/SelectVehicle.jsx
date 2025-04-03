@@ -53,16 +53,36 @@ const SelectVehicle = ({ nextStep, car, setBookingDetails }) => {
       setError("Please fill all fields before proceeding.");
       return;
     }
-
+  
     if (!isWithinAvailability(pickupDate) || !isWithinAvailability(dropoffDate)) {
       setError("Selected dates are outside the car's availability range.");
       return;
     }
-
+  
     setError("");
-    setBookingDetails({ pickupDate, pickupTime, dropoffDate, dropoffTime, pickupLocation, dropoffLocation });
+    setBookingDetails((prev) => ({
+      ...prev,
+      vehicle: {
+        id: car.id,
+        brand: car.brand,
+        model: car.model,
+        year: car.year,
+        fuelType: car.fuelType,
+        transmission: car.transmission,
+        capacity: car.capacity,
+        imageUrl: car.imageUrl,
+      },
+      pickupDate,
+      pickupTime,
+      dropoffDate,
+      dropoffTime,
+      pickupLocation,
+      dropoffLocation,
+    }));
+  
     nextStep();
   };
+  
 
   return (
     <>

@@ -15,7 +15,7 @@ const BookingPage = () => {
   const [step, setStep] = useState(1);
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [location, setLocation] = useState(""); // Store location from Firebase
+  const [location, setLocation] = useState("");
 
   // Booking details state (shared across steps)
   const [bookingDetails, setBookingDetails] = useState({
@@ -25,6 +25,23 @@ const BookingPage = () => {
     dropoffTime: "",
     pickupLocation: "",
     dropoffLocation: "",
+  });
+
+  // Personal details state (added)
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    dob: "",
+    mobileNumber: "",
+    email: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    proofOfAddress: "",
+    documentNumber: "",
   });
 
   useEffect(() => {
@@ -37,7 +54,7 @@ const BookingPage = () => {
         if (docSnap.exists()) {
           const carData = { id: docSnap.id, ...docSnap.data() };
           setCar(carData);
-          setLocation(carData.location || ""); // Set location if available
+          setLocation(carData.location || "");
         } else {
           console.error("Car not found");
         }
@@ -50,13 +67,9 @@ const BookingPage = () => {
     fetchCarDetails();
   }, [id]);
 
-  // Proceed to next step
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 5));
-  
-  // Go back to the previous step
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  // Render different steps of the booking process
   const renderStep = () => {
     if (loading) {
       return (
@@ -74,13 +87,13 @@ const BookingPage = () => {
       case 1:
         return <SelectVehicle nextStep={nextStep} car={car} setBookingDetails={setBookingDetails} location={location} />;
       case 2:
-        return <PersonalDetails nextStep={nextStep} prevStep={prevStep} bookingDetails={bookingDetails} setBookingDetails={setBookingDetails} />;
+        return <PersonalDetails nextStep={nextStep} prevStep={prevStep} personalInfo={personalInfo} setPersonalInfo={setPersonalInfo} />;
       case 3:
-        return <BookingDetails nextStep={nextStep} prevStep={prevStep} bookingDetails={bookingDetails} />;
+        return <BookingDetails nextStep={nextStep} prevStep={prevStep} car={car} bookingDetails={bookingDetails} personalInfo={personalInfo} />;
       case 4:
-        return <Payment nextStep={nextStep} prevStep={prevStep} bookingDetails={bookingDetails} />;
+        return <Payment nextStep={nextStep} prevStep={prevStep} bookingDetails={bookingDetails} personalInfo={personalInfo} />;
       case 5:
-        return <Confirmation prevStep={prevStep} bookingDetails={bookingDetails} />;
+        return <Confirmation prevStep={prevStep} bookingDetails={bookingDetails} personalInfo={personalInfo} />;
       default:
         return <SelectVehicle nextStep={nextStep} car={car} setBookingDetails={setBookingDetails} location={location} />;
     }
@@ -90,7 +103,6 @@ const BookingPage = () => {
     <>
       <Header />
       <div className="container mx-auto py-10 px-5 text-center">
-        {/* Booking Steps Progress */}
         <ul className="steps steps-vertical lg:steps-horizontal justify-center mb-10">
           <li className={`step ${step >= 1 ? "step-primary" : ""}`}>Select Vehicle & Options</li>
           <li className={`step ${step >= 2 ? "step-primary" : ""}`}>Personal Details</li>
@@ -99,7 +111,6 @@ const BookingPage = () => {
           <li className={`step ${step >= 5 ? "step-primary" : ""}`}>Payment Confirmation</li>
         </ul>
 
-        {/* Render the current step */}
         {renderStep()}
       </div>
     </>
