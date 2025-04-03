@@ -24,26 +24,23 @@ const PersonalDetails = ({ nextStep, prevStep }) => {
 
     useEffect(() => {
         fetch("/data/states.json")
-            .then((res) => res.json())
-            .then((data) => {
-                const formattedStates = data.map((state) => ({
-                    label: state.name,
-                    value: state.code, 
-                }));
-                setStates(formattedStates);
-            })
-            .catch((err) => console.error("Error fetching states:", err));
-    }, []);
-
-    useEffect(() => {
-        if (!personalInfo.state) return; 
-
-        fetch("/data/cities.json")
-            .then((res) => res.json())
-            .then((data) => {
-                setCities(data);
-            })
-            .catch((err) => console.error("Error fetching cities:", err));
+        .then((res) => res.json())
+        .then((data) => {
+          const formattedStates = data.map((state) => ({
+            label: state.name, // Show name in dropdown
+            value: state.code, // Store state code
+          }));
+          setStates(formattedStates);
+        })
+        .catch((err) => console.error("Error fetching states:", err));
+  
+      // Fetch Cities
+      fetch("/data/cities.json")
+        .then((res) => res.json())
+        .then((data) => {
+          setCities(data);
+        })
+        .catch((err) => console.error("Error fetching cities:", err));
     }, []);
 
     const handleStateChange = (e) => {
