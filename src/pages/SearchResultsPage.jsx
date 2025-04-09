@@ -4,6 +4,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import Header from "../components/Header";
 import { ProgressSpinner } from "primereact/progressspinner";
+import { getAuth } from "firebase/auth";
 
 // Function to format date
 const formatDate = (timestamp) => {
@@ -14,6 +15,9 @@ const formatDate = (timestamp) => {
 const SearchResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,7 +61,7 @@ const SearchResultsPage = () => {
     };
 
     fetchListings();
-  }, []);
+  }, [searchLocation, pickupDate, dropoffDate]);
 
   const filteredListings = listings.filter((listing) => {
     return (
@@ -67,6 +71,15 @@ const SearchResultsPage = () => {
       (filters.maxPrice === "Unlimited" || listing.pricePerHour <= filters.maxPrice)
     );
   });
+
+  const clearFilters = () => {
+    setFilters({
+      fuelType: "",
+      transmission: "",
+      maxPrice: "Unlimited",
+      brand: "",
+    });
+  };
 
   return (
     <>
@@ -79,6 +92,7 @@ const SearchResultsPage = () => {
           <label className="block mb-2">Car Brand:</label>
           <select
             className="select select-info w-full mb-4"
+            value={filters.brand}
             onChange={(e) => setFilters({ ...filters, brand: e.target.value })}
           >
             <option value="">All Brands</option>
@@ -101,34 +115,55 @@ const SearchResultsPage = () => {
               setFilters({ ...filters, maxPrice: val === 350 ? "Unlimited" : val });
             }}
           />
+          <p className="text-sm mb-4 mt-1">
+            {filters.maxPrice === "Unlimited" ? "Unlimited" : `₹${filters.maxPrice}`}
+          </p>
 
           <label className="block mb-2">Fuel Type:</label>
           <div className="flex flex-col gap-2 mb-4">
-            <label>
-              <input type="radio" name="fuelType" className="radio radio-accent" onChange={() => setFilters({ ...filters, fuelType: "Petrol" })} /> Petrol
-            </label>
-            <label>
-              <input type="radio" name="fuelType" className="radio radio-accent" onChange={() => setFilters({ ...filters, fuelType: "Diesel" })} /> Diesel
-            </label>
-            <label>
-              <input type="radio" name="fuelType" className="radio radio-accent" onChange={() => setFilters({ ...filters, fuelType: "Electric" })} /> Electric
-            </label>
+            {["Petrol", "Diesel", "Electric"].map((type) => (
+              <label key={type}>
+                <input
+                  type="radio"
+                  name="fuelType"
+                  className="radio radio-accent"
+                  checked={filters.fuelType === type}
+                  onChange={() => setFilters({ ...filters, fuelType: type })}
+                />{" "}
+                {type}
+              </label>
+            ))}
           </div>
 
           <label className="block mb-2">Transmission:</label>
-          <div className="flex flex-col gap-2">
-            <label>
-              <input type="radio" name="transmission" className="radio radio-accent" onChange={() => setFilters({ ...filters, transmission: "Manual" })} /> Manual
-            </label>
-            <label>
-              <input type="radio" name="transmission" className="radio radio-accent" onChange={() => setFilters({ ...filters, transmission: "Automatic" })} /> Automatic
-            </label>
+          <div className="flex flex-col gap-2 mb-4">
+            {["Manual", "Automatic"].map((type) => (
+              <label key={type}>
+                <input
+                  type="radio"
+                  name="transmission"
+                  className="radio radio-accent"
+                  checked={filters.transmission === type}
+                  onChange={() => setFilters({ ...filters, transmission: type })}
+                />{" "}
+                {type}
+              </label>
+            ))}
           </div>
+
+          <button
+            className="btn btn-warning w-full mt-2"
+            onClick={clearFilters}
+          >
+            Clear Filters ✖
+          </button>
         </div>
 
         {/* Listings Section */}
         <div className="w-3/4">
-          <h1 className="text-3xl font-bold mb-6">Available Cars in {searchLocation}</h1>
+          <h1 className="text-3xl font-bold mb-6">
+            Available Cars in {searchLocation}
+          </h1>
 
           {loading ? (
             <div className="flex justify-center items-center min-h-[200px] bg-transparent">
@@ -140,30 +175,52 @@ const SearchResultsPage = () => {
             <p className="text-center text-lg">No cars available matching filters.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredListings.map((listing) => (
-                <div key={listing.id} className="card bg-base-100 shadow-lg p-4">
-                  <img
-                    src={listing.imageUrl || "https://via.placeholder.com/300x200"}
-                    alt={`${listing.brand} ${listing.model}`}
-                    className="w-full h-40 object-cover rounded-md mb-3"
-                  />
-                  <div className="card-body">
-                    <h2 className="card-title">{listing.brand} {listing.model} ({listing.year})</h2>
-                    <p className="text-sm text-gray-600">Fuel: {listing.fuelType}</p>
-                    <p className="text-sm text-gray-600">Transmission: {listing.transmission}</p>
-                    <p className="text-sm text-gray-600">Seats: {listing.capacity}</p>
-                    <p className="text-sm text-gray-600">Location: {listing.location}</p>
-                    <p className="text-sm text-green-500 font-semibold">Price per Hour: ₹{listing.pricePerHour}</p>
-                    <p className="text-sm">Available From: {formatDate(listing.availableFrom)}</p>
-                    <p className="text-sm">Available Till: {formatDate(listing.availableTill)}</p>
-                    
-                    <div className="mt-3 flex flex-col gap-2">
-                      <button className="btn btn-outline btn-primary w-full" onClick={() => navigate(`/listing/${listing.id}`)}>View Details</button>
-                      <button className="btn btn-primary w-full">Book Now</button>
+              {filteredListings.map((listing) => {
+                const isOwner = currentUser && listing.ownerId === currentUser.uid;
+                return (
+                  <div key={listing.id} className="card bg-base-100 shadow-lg p-4">
+                    <img
+                      src={listing.imageUrl || "https://via.placeholder.com/300x200"}
+                      alt={`${listing.brand} ${listing.model}`}
+                      className="w-full h-40 object-cover rounded-md mb-3"
+                    />
+                    <div className="card-body">
+                      <h2 className="card-title">{listing.brand} {listing.model} ({listing.year})</h2>
+                      <p className="text-sm text-gray-600">Fuel: {listing.fuelType}</p>
+                      <p className="text-sm text-gray-600">Transmission: {listing.transmission}</p>
+                      <p className="text-sm text-gray-600">Seats: {listing.capacity}</p>
+                      <p className="text-sm text-gray-600">Location: {listing.location}</p>
+                      <p className="text-sm text-green-500 font-semibold">Price per Hour: ₹{listing.pricePerHour}</p>
+                      <p className="text-sm">Available From: {formatDate(listing.availableFrom)}</p>
+                      <p className="text-sm">Available Till: {formatDate(listing.availableTill)}</p>
+
+                      <div className="mt-3 flex flex-col gap-2">
+                        <button
+                          className="btn btn-outline btn-primary w-full"
+                          onClick={() => navigate(`/listing/${listing.id}`)}
+                        >
+                          View Details
+                        </button>
+                        {isOwner ? (
+                          <button
+                            className="btn btn-secondary w-full"
+                            onClick={() => navigate(`/edit/${listing.id}`)}
+                          >
+                            Edit Details
+                          </button>
+                        ) : (
+                          <button
+                            className="btn btn-primary w-full"
+                            onClick={() => navigate(`/booking/${listing.id}`)}
+                          >
+                            Book Now
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -173,4 +230,3 @@ const SearchResultsPage = () => {
 };
 
 export default SearchResultsPage;
-  

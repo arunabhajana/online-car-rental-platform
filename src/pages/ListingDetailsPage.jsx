@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import Header from "../components/Header";
-import { FaCar, FaCalendarAlt, FaGasPump, FaUsers, FaCogs, FaMapMarkerAlt, FaUserShield, FaUser, FaMoneyBillWave, FaCheckCircle } from "react-icons/fa";
+import {
+  FaCar,
+  FaCalendarAlt,
+  FaGasPump,
+  FaUsers,
+  FaCogs,
+  FaMapMarkerAlt,
+  FaUserShield,
+  FaUser,
+  FaMoneyBillWave,
+  FaCheckCircle,
+} from "react-icons/fa";
 import { Card } from "primereact/card";
 import { Image } from "primereact/image";
 import { Tooltip } from "primereact/tooltip";
@@ -18,7 +29,7 @@ const priceOptions = {
 
 const ListingDetailsPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedOption, setSelectedOption] = useState("Per Day");
@@ -34,7 +45,7 @@ const ListingDetailsPage = () => {
         if (docSnap.exists()) {
           const carData = { id: docSnap.id, ...docSnap.data() };
           setListing(carData);
-          
+
           // Fetch seller info
           const userRef = doc(db, "users", carData.ownerId);
           const userSnap = await getDoc(userRef);
@@ -60,6 +71,17 @@ const ListingDetailsPage = () => {
     }
   }, [selectedOption, listing]);
 
+  const handleBookNow = () => {
+    navigate(`/booking/${id}`);
+  };
+
+  const handleEdit = () => {
+    navigate(`/edit/${id}`);
+  };
+
+  const currentUser = auth.currentUser;
+  const isOwner = currentUser && listing && currentUser.uid === listing.ownerId;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-transparent">
@@ -68,11 +90,8 @@ const ListingDetailsPage = () => {
     );
   }
 
-  const handleBookNow = () => {
-    navigate(`/booking/${id}`);
-  };
-
-  if (!listing) return <p className="text-center text-lg text-red-500">Listing not found.</p>;
+  if (!listing)
+    return <p className="text-center text-lg text-red-500">Listing not found.</p>;
 
   const carAge = new Date().getFullYear() - listing.year;
 
@@ -83,24 +102,30 @@ const ListingDetailsPage = () => {
         <div className="w-2/3 space-y-6">
           <Card className="p-6 shadow-lg rounded-lg">
             <h1 className="text-3xl font-bold mb-4 flex items-center gap-2">
-              <FaCar className="text-blue-600" /> {listing.brand} {listing.model} ({listing.year})
+              <FaCar className="text-blue-600" /> {listing.brand} {listing.model} (
+              {listing.year})
             </h1>
 
             <div className="space-y-3 text-lg">
               <p className="flex items-center gap-2">
-                <FaCalendarAlt className="text-gray-600" /> Car Age: <span className="font-semibold">{carAge} years</span>
+                <FaCalendarAlt className="text-gray-600" /> Car Age:{" "}
+                <span className="font-semibold">{carAge} years</span>
               </p>
               <p className="flex items-center gap-2">
-                <FaGasPump className="text-gray-600" /> Fuel Type: <span className="font-semibold">{listing.fuelType}</span>
+                <FaGasPump className="text-gray-600" /> Fuel Type:{" "}
+                <span className="font-semibold">{listing.fuelType}</span>
               </p>
               <p className="flex items-center gap-2">
-                <FaUsers className="text-gray-600" /> Capacity: <span className="font-semibold">{listing.capacity} Seats</span>
+                <FaUsers className="text-gray-600" /> Capacity:{" "}
+                <span className="font-semibold">{listing.capacity} Seats</span>
               </p>
               <p className="flex items-center gap-2">
-                <FaCogs className="text-gray-600" /> Transmission: <span className="font-semibold">{listing.transmission}</span>
+                <FaCogs className="text-gray-600" /> Transmission:{" "}
+                <span className="font-semibold">{listing.transmission}</span>
               </p>
               <p className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-gray-600" /> Location: <span className="font-semibold">{listing.location}</span>
+                <FaMapMarkerAlt className="text-gray-600" /> Location:{" "}
+                <span className="font-semibold">{listing.location}</span>
               </p>
             </div>
           </Card>
@@ -126,9 +151,15 @@ const ListingDetailsPage = () => {
               Total Price: ₹{calculatedPrice}
             </p>
 
-            <button className="btn btn-primary w-full" onClick={handleBookNow}>
-              Book Now
-            </button>
+            {isOwner ? (
+              <button className="btn btn-secondary w-full" onClick={handleEdit}>
+                Edit Details
+              </button>
+            ) : (
+              <button className="btn btn-primary w-full" onClick={handleBookNow}>
+                Book Now
+              </button>
+            )}
           </Card>
         </div>
 
@@ -141,16 +172,17 @@ const ListingDetailsPage = () => {
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <FaUserShield className="text-blue-600" /> Seller Details
             </h2>
-            
+
             <p className="text-lg flex items-center gap-2">
-              <FaUser className="text-gray-600" /> Owner Name: <span className="font-semibold">{seller}</span>
+              <FaUser className="text-gray-600" /> Owner Name:{" "}
+              <span className="font-semibold">{seller}</span>
               <span data-pr-tooltip="Verified">
                 <FaCheckCircle className="text-green-500 cursor-pointer" />
               </span>
             </p>
 
             <Tooltip target="[data-pr-tooltip]" />
-          </Card> 
+          </Card>
         </div>
       </div>
     </>
