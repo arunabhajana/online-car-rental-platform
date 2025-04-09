@@ -100,7 +100,7 @@ const Payment = ({
         setAmount(amountInPaise / 100); 
 
         const res = await axios.post(
-          "http://localhost:5000/create-payment-intent", // Adjust port if needed
+          `${import.meta.env.VITE_BACKEND_URL}/create-payment-intent`,
           { amount: amountInPaise },
           { headers: { "Content-Type": "application/json" } }
         );
