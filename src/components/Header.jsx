@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [isMac, setIsMac] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -24,6 +27,26 @@ const Header = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isMac]);
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      if (user?.uid) {
+        const profileRef = doc(db, "profile", user.uid);
+        const profileSnap = await getDoc(profileRef);
+        if (profileSnap.exists()) {
+          const data = profileSnap.data();
+          if (data.photoURL) {
+            setProfileImage(data.photoURL);
+          } else {
+            setProfileImage(user.photoURL);
+          }
+        } else {
+          setProfileImage(user.photoURL);
+        }
+      }
+    };
+    fetchProfileImage();
+  }, [user]);
 
   return (
     <>
@@ -84,7 +107,7 @@ const Header = () => {
               <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                   <div className="w-10 rounded-full">
-                    <img src={user.photoURL || "https://via.placeholder.com/40"} alt="User Avatar" />
+                    <img src={profileImage || "https://via.placeholder.com/40"} alt="User Avatar" />
                   </div>
                 </div>
                 <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
@@ -107,7 +130,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* ✅ Centered Search Modal with Background Blur */}
       {isSearchOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-opacity-40 backdrop-blur-lg z-50">
           <div className="bg-white p-6 rounded-lg w-4/5 max-w-md shadow-lg transform transition-all scale-95 animate-fadeIn">

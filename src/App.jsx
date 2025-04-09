@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminListings from "./pages/AdminListings";
 import BookingPage from "./pages/BookingsPage";
+import UserProfile from "./pages/ProfilePage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -56,7 +57,7 @@ function App() {
         <Route path="/suppliers" element={<PrivateRoute role={role}><SuppliersPage /></PrivateRoute>} />
         <Route path="/listings" element={<PrivateRoute role={role}><ListingsPage /></PrivateRoute>} />
         <Route path="/new-listing" element={<PrivateRoute role={role}><NewListingsPage /></PrivateRoute>} />
-        <Route path="/profile" element={<PrivateRoute role={role}><ProfilePage /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute role={role}><UserProfile /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute role={role}><SettingsPage /></PrivateRoute>} />
         <Route path="/edit/:id" element={<PrivateRoute role={role}><EditListingPage /></PrivateRoute>} />
         <Route path="/search-results" element={<PrivateRoute role={role}><SearchResultsPage /></PrivateRoute>} />

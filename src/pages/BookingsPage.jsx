@@ -11,13 +11,12 @@ import Confirmation from "../components/Confirmation";
 import { ProgressSpinner } from "primereact/progressspinner";
 
 const BookingPage = () => {
-  const { id } = useParams(); // Get car ID from URL
+  const { id } = useParams();
   const [step, setStep] = useState(1);
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState("");
 
-  // Booking details state (shared across steps)
   const [bookingDetails, setBookingDetails] = useState({
     pickupDate: "",
     pickupTime: "",
@@ -27,7 +26,6 @@ const BookingPage = () => {
     dropoffLocation: "",
   });
 
-  // Personal details state (added)
   const [personalInfo, setPersonalInfo] = useState({
     firstName: "",
     middleName: "",
@@ -42,6 +40,11 @@ const BookingPage = () => {
     postalCode: "",
     proofOfAddress: "",
     documentNumber: "",
+  });
+
+  const [paymentResult, setPaymentResult] = useState({
+    amount: 0,
+    paymentIntentId: "",
   });
 
   useEffect(() => {
@@ -85,17 +88,62 @@ const BookingPage = () => {
 
     switch (step) {
       case 1:
-        return <SelectVehicle nextStep={nextStep} car={car} setBookingDetails={setBookingDetails} location={location} />;
+        return (
+          <SelectVehicle
+            nextStep={nextStep}
+            car={car}
+            setBookingDetails={setBookingDetails}
+            location={location}
+          />
+        );
       case 2:
-        return <PersonalDetails nextStep={nextStep} prevStep={prevStep} personalInfo={personalInfo} setPersonalInfo={setPersonalInfo} />;
+        return (
+          <PersonalDetails
+            nextStep={nextStep}
+            prevStep={prevStep}
+            personalInfo={personalInfo}
+            setPersonalInfo={setPersonalInfo}
+          />
+        );
       case 3:
-        return <BookingDetails nextStep={nextStep} prevStep={prevStep} car={car} bookingDetails={bookingDetails} personalInfo={personalInfo} />;
+        return (
+          <BookingDetails
+            nextStep={nextStep}
+            prevStep={prevStep}
+            car={car}
+            bookingDetails={bookingDetails}
+            personalInfo={personalInfo}
+          />
+        );
       case 4:
-        return <Payment nextStep={nextStep} prevStep={prevStep} bookingDetails={bookingDetails} personalInfo={personalInfo} />;
+        return (
+          <Payment
+            nextStep={nextStep}
+            prevStep={prevStep}
+            bookingDetails={bookingDetails}
+            personalInfo={personalInfo}
+            pricePerHour={car.pricePerHour}
+            setPaymentResult={setPaymentResult} 
+          />
+        );
       case 5:
-        return <Confirmation prevStep={prevStep} bookingDetails={bookingDetails} personalInfo={personalInfo} />;
+        return (
+          <Confirmation
+            bookingDetails={bookingDetails}
+            personalInfo={personalInfo}
+            vehicle={car}
+            paymentResult={paymentResult} 
+          />
+        );
       default:
-        return <SelectVehicle nextStep={nextStep} car={car} setBookingDetails={setBookingDetails} location={location} />;
+        return (
+          <SelectVehicle
+            nextStep={nextStep}
+            car={car}
+            setBookingDetails={setBookingDetails}
+            location={location}
+          />
+        );
     }
   };
 

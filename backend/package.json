@@ -1,0 +1,25 @@
+{
+  "name": "onlinecarrentalplatform-backend",
+  "version": "1.0.0",
+  "description": "backend for bookcars",
+  "keywords": [
+    "none"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "license": "MIT",
+  "author": "arunabhajana",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "stripe": "^18.0.0"
+  }
+}
