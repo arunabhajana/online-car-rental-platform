@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Dropdown } from "primereact/dropdown";
-import { db } from "../firebaseConfig"; // adjust this path
+import { db } from "../firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -101,13 +101,13 @@ const PersonalDetails = ({ nextStep, prevStep, personalInfo, setPersonalInfo }) 
 
             {showSuccess && (
                 <div className="alert alert-success shadow-lg mb-6">
-                    <span>✅ Details saved successfully!</span>
+                    <span>Details saved successfully!</span>
                 </div>
             )}
 
             {error && (
                 <div className="alert alert-error shadow-lg mb-6">
-                    <span>❌ {error}</span>
+                    <span>{error}</span>
                 </div>
             )}
 

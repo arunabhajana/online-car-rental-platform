@@ -19,6 +19,7 @@ import { Card } from "primereact/card";
 import { Image } from "primereact/image";
 import { Tooltip } from "primereact/tooltip";
 import { ProgressSpinner } from "primereact/progressspinner";
+import ReviewSection from "../components/ReviewSection";
 
 const priceOptions = {
   "Per Hour": 1,
@@ -28,7 +29,7 @@ const priceOptions = {
 };
 
 const ListingDetailsPage = () => {
-  const { id } = useParams();
+  const { id } = useParams(); 
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +47,6 @@ const ListingDetailsPage = () => {
           const carData = { id: docSnap.id, ...docSnap.data() };
           setListing(carData);
 
-          // Fetch seller info
           const userRef = doc(db, "users", carData.ownerId);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
@@ -99,11 +99,11 @@ const ListingDetailsPage = () => {
     <>
       <Header />
       <div className="container mx-auto py-10 px-5 flex gap-6">
+        {/* Left Column */}
         <div className="w-2/3 space-y-6">
           <Card className="p-6 shadow-lg rounded-lg">
             <h1 className="text-3xl font-bold mb-4 flex items-center gap-2">
-              <FaCar className="text-blue-600" /> {listing.brand} {listing.model} (
-              {listing.year})
+              <FaCar className="text-blue-600" /> {listing.brand} {listing.model} ({listing.year})
             </h1>
 
             <div className="space-y-3 text-lg">
@@ -163,12 +163,13 @@ const ListingDetailsPage = () => {
           </Card>
         </div>
 
-        <div className="w-1/3">
+        {/* Right Column */}
+        <div className="w-1/3 space-y-6">
           <Card className="p-4 shadow-lg rounded-lg">
             <Image src={listing.imageUrl} alt="Car" className="rounded-lg" preview />
           </Card>
 
-          <Card className="p-6 shadow-lg rounded-lg mt-6">
+          <Card className="p-6 shadow-lg rounded-lg mb-6">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <FaUserShield className="text-blue-600" /> Seller Details
             </h2>
@@ -185,6 +186,11 @@ const ListingDetailsPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* ReviewSection */}
+      <Card className="p-6 shadow-lg rounded-lg w-full mt-2">
+        <ReviewSection carId={id} />
+      </Card>
     </>
   );
 };
