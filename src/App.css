@@ -2,3 +2,51 @@
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark, cupcake;
 }
+
+.react-calendar {
+  border: none;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  width: 100%;
+  font-family: 'Inter', 'Segoe UI', sans-serif; /* Modern font */
+}
+
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.react-calendar__tile {
+  border-radius: 0px;
+  padding: 0;
+  height: 44px !important;
+  width: 100% !important;
+  margin: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Booked Date - Red-500 */
+.booked-date {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+/* Available Date - Emerald-500 */
+.available-date {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+
+/* Partial Date - Amber-400 with dark text */
+.partial-date {
+  background-color: #fbbf24 !important;
+  color: #1f2937 !important;
+}
+
