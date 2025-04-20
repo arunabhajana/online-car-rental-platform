@@ -3,7 +3,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { Link } from "react-router-dom";
 import { db, auth } from "../firebaseConfig";
-import { FiUsers, FiBarChart2, FiLogOut } from "react-icons/fi";
+import { FiUsers, FiBarChart2, FiLogOut, FiCalendar } from "react-icons/fi";
 import { FaCar } from "react-icons/fa";
 
 const AdminUsers = () => {
@@ -43,6 +43,9 @@ const AdminUsers = () => {
                     </Link>
                     <Link to="/admin/listings" className="py-2 px-4 rounded hover:bg-gray-700 flex items-center gap-2">
                         <FaCar /> Listings
+                    </Link>
+                    <Link to="/admin/bookings" className="py-2 px-4 rounded hover:bg-gray-700 flex items-center gap-2">
+                        <FiCalendar /> Bookings
                     </Link>
                 </nav>
                 <button

@@ -3,7 +3,7 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { Link } from "react-router-dom";
 import { db, auth } from "../firebaseConfig";
-import { FiUsers, FiBarChart2, FiLogOut } from "react-icons/fi";
+import { FiUsers, FiBarChart2, FiLogOut, FiCalendar } from "react-icons/fi";
 import { FaCar } from "react-icons/fa";
 import {
     BarChart,
@@ -111,6 +111,9 @@ const AdminDashboard = () => {
                     <Link to="/admin/listings" className="py-2 px-4 rounded hover:bg-gray-700 flex items-center gap-2">
                         <FaCar /> Listings
                     </Link>
+                    <Link to="/admin/bookings" className="py-2 px-4 rounded hover:bg-gray-700 flex items-center gap-2">
+                        <FiCalendar /> Bookings
+                    </Link>
                 </nav>
                 <button
                     onClick={handleLogout}
@@ -178,6 +181,7 @@ const AdminDashboard = () => {
                         </table>
                     </div>
                 </div>
+
                 <h2 className="text-xl font-semibold mt-6 mb-2">Recent Listings</h2>
                 <div className="overflow-x-auto">
                     <table className="table w-full border border-gray-200">

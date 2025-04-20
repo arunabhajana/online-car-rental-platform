@@ -15,6 +15,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminListings from "./pages/AdminListings";
 import BookingPage from "./pages/BookingsPage";
 import UserProfile from "./pages/ProfilePage";
+import AdminBookings from "./pages/AdminBookings";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -63,6 +64,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminRoute role={role}><AdminDashboard /></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute role={role}><AdminUsers /></AdminRoute>} />
         <Route path="/admin/listings" element={<AdminRoute role={role}><AdminListings /></AdminRoute>} />
+        <Route path="/admin/bookings" element={<AdminRoute role={role}><AdminBookings /></AdminRoute>} />
       </Routes>
     </Router>
   );
