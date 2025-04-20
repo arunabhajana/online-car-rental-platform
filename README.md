@@ -1,8 +1,6 @@
-
 # 🚗 BookCars - Car Rental Platform
 
 BookCars is a modern car rental platform that allows users to list, browse, and book cars with ease. It features real-time search, user authentication, and an intuitive booking experience.
-
 
 
 
@@ -15,19 +13,20 @@ BookCars is a modern car rental platform that allows users to list, browse, and 
 - ✅ Responsive UI – Optimized for mobile and desktop.
 - ✅ Secure Payments – Integration with a payment gateway (future feature).
 - ✅ Admin Dashboard - Monitor the users , listings & bookings.
+- ✅ Email Notifications - Sends Booking Confirmation Emails.
 
 
 ## 🛠️ Tech Stack
 
--  Frontend: React.js, Tailwind CSS, React Router, DaisyUI
--  Backend: Firebase (Firestore, Auth)
--  State Management: React Context API
--  Icons: React Icons
+- Frontend: React.js, Tailwind CSS, React Router, DaisyUI
+- Backend: Firebase (Firestore, Auth)
+- State Management: React Context API
+- Icons: React Icons
 
 
 ## 📂 Project Structure
 
-```md
+```
 📦 bookcars
  ┣ 📂 public
  ┣ 📂 src
@@ -56,39 +55,28 @@ BookCars is a modern car rental platform that allows users to list, browse, and 
  ┣ 📜 package.json
  ┣ 📜 tailwind.config.js
 ```
-## 🚀  Getting Started 
+## 🚀 Getting Started
 
-1. **Clone the Repository**
-
-```git
+### Clone the Repository
+```
 git clone https://github.com/arunabhajana/online-car-rental-platform.git
+```
+```
 cd online-car-rental-platform
 ```
-
-2. **Install Dependencies**
-
-```bash
+Install Dependencies
+```
 npm install
 ```
-
-3. Configure Firebase
-
+- Configure Firebase
 - Create a Firebase project.
-- Add Firestore and Authentication.
+- Add Firestore , Authentication , Storage.
 - Replace the firebaseConfig.js file with your Firebase credentials.
 
-4. Run the Project
-
-```bash
+### Run the Project
+```
 npm run dev
 ```
-## 🔧 Future Enhancements
-
-- Payment Gateway Integration (Stripe, Razorpay, etc.)
-- Car Owner Dashboard – Manage listings & bookings.
-- AI-Powered Recommendations – Suggest cars based on user preferences.
-- PWA Support – Make the app installable on mobile.
-
 
 ## 🙌 Contributing
 
