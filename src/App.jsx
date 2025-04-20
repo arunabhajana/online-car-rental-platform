@@ -5,9 +5,6 @@ import { doc, getDoc } from "firebase/firestore";
 import ListingsPage from "./pages/ListingsPage";
 import NewListingsPage from "./pages/NewListingsPage";
 import HomePage from "./pages/HomePage";
-import SuppliersPage from "./pages/SuppliersPage";
-import ProfilePage from "./pages/ProfilePage";
-import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import EditListingPage from "./pages/EditListingsPage";
@@ -54,11 +51,9 @@ function App() {
         <Route path="/register" element={<RegistrationPage />} />
 
         <Route path="/home" element={<PrivateRoute role={role}><HomePage /></PrivateRoute>} />
-        <Route path="/suppliers" element={<PrivateRoute role={role}><SuppliersPage /></PrivateRoute>} />
         <Route path="/listings" element={<PrivateRoute role={role}><ListingsPage /></PrivateRoute>} />
         <Route path="/new-listing" element={<PrivateRoute role={role}><NewListingsPage /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute role={role}><UserProfile /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute role={role}><SettingsPage /></PrivateRoute>} />
         <Route path="/edit/:id" element={<PrivateRoute role={role}><EditListingPage /></PrivateRoute>} />
         <Route path="/search-results" element={<PrivateRoute role={role}><SearchResultsPage /></PrivateRoute>} />
         <Route path="/listing/:id" element={<PrivateRoute role={role}><ListingDetailsPage /></PrivateRoute>} />

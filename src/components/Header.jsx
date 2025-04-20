@@ -10,7 +10,14 @@ const Header = () => {
   const [isMac, setIsMac] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const searchRef = useRef(null);
+
+  const cityList = [
+    "Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata",
+    "Pune", "Hyderabad", "Ahmedabad", "Jaipur", "Surat",
+    "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane"
+  ];
 
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().includes("MAC"));
@@ -48,6 +55,34 @@ const Header = () => {
     fetchProfileImage();
   }, [user]);
 
+  const formatCity = (input) => {
+    return input
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const handleSearch = () => {
+    const formattedCity = formatCity(searchTerm);
+    const city = cityList.find(c => c.toLowerCase() === formattedCity.toLowerCase());
+
+    if (!city) {
+      alert("Please enter a valid city from the list.");
+      return;
+    }
+
+    const today = new Date();
+    const pickupDate = today.toISOString().split("T")[0];
+    const dropoffDate = new Date(today.setDate(today.getDate() + 2))
+      .toISOString()
+      .split("T")[0];
+
+    navigate(
+      `/search-results?location=${city}&pickupDate=${pickupDate}&dropoffDate=${dropoffDate}`
+    );
+  };
+
   return (
     <>
       <div className="navbar bg-base-100 shadow-sm">
@@ -66,7 +101,6 @@ const Header = () => {
             </div>
             <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
               <li><a onClick={() => navigate("/")}>Home</a></li>
-              <li><a onClick={() => navigate("/suppliers")}>Suppliers</a></li>
               <li><a onClick={() => navigate("/listings")}>Listings</a></li>
             </ul>
           </div>
@@ -85,7 +119,17 @@ const Header = () => {
                   <path d="m21 21-4.3-4.3"></path>
                 </g>
               </svg>
-              <input type="search" className="grow" placeholder="Search" ref={searchRef} />
+              <input
+                type="search"
+                className="grow"
+                placeholder="Search"
+                ref={searchRef}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+              />
               <kbd className="kbd kbd-sm">{isMac ? "⌘" : "Ctrl"}</kbd>
               <kbd className="kbd kbd-sm">K</kbd>
             </label>
@@ -112,7 +156,6 @@ const Header = () => {
                 </div>
                 <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
                   <li><a onClick={() => navigate("/profile")}>Profile</a></li>
-                  <li><a onClick={() => navigate("/settings")}>Settings</a></li>
                   <li><a onClick={logout}>Logout</a></li>
                 </ul>
               </div>
@@ -145,7 +188,20 @@ const Header = () => {
                     <path d="m21 21-4.3-4.3"></path>
                   </g>
                 </svg>
-                <input type="search" className="grow" placeholder="Search..." ref={searchRef} />
+                <input
+                  type="search"
+                  className="grow"
+                  placeholder="Search..."
+                  ref={searchRef}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                      setIsSearchOpen(false);
+                    }
+                  }}
+                />
                 <kbd className="kbd kbd-sm">{isMac ? "⌘" : "Ctrl"}</kbd>
                 <kbd className="kbd kbd-sm">K</kbd>
               </label>
