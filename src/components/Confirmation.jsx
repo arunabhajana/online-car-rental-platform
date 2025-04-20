@@ -16,6 +16,13 @@ const Confirmation = ({ bookingDetails, personalInfo, vehicle, paymentResult }) 
 
   const fullName = `${personalInfo.firstName} ${personalInfo.middleName} ${personalInfo.lastName}`.trim();
 
+  const calculateDuration = (start, end) => {
+    const d1 = new Date(start);
+    const d2 = new Date(end);
+    const diffTime = Math.abs(d2 - d1);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
   useEffect(() => {
     if (bookingSaved.current) return;
 
@@ -28,7 +35,7 @@ const Confirmation = ({ bookingDetails, personalInfo, vehicle, paymentResult }) 
         }
 
         const bookingData = {
-          userId: user.uid, 
+          userId: user.uid,
           fullName,
           email: personalInfo.email,
           mobileNumber: personalInfo.mobileNumber,
@@ -70,8 +77,23 @@ const Confirmation = ({ bookingDetails, personalInfo, vehicle, paymentResult }) 
         await addDoc(collection(db, "bookings"), bookingData);
         bookingSaved.current = true;
         console.log("✅ Booking saved to Firestore");
+
+        await fetch(`${emailUrl}/send-booking-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userEmail: personalInfo.email,
+            carName: `${vehicle?.brand} ${vehicle?.model}`,
+            date: bookingDetails.pickupDate,
+            duration: calculateDuration(bookingDetails.pickupDate, bookingDetails.dropoffDate),
+            total: paymentResult?.amount || 0,
+          }),
+        });
+        
+        console.log("✅ Booking confirmation email sent");
+
       } catch (err) {
-        console.error("❌ Failed to save booking to Firestore:", err);
+        console.error("❌ Failed to save booking to Firestore or send email:", err);
       }
     };
 
